@@ -1,7 +1,8 @@
 # Camotics Build Notes 
 Build notes for camotics on a raspberry pi 4, 4gb ram, running raspbian "Buster" . To install, download the [Debian binary package](https://github.com/koendv/camotics-raspberrypi/raw/master/camotics_1.2.0_armhf.deb) and install using 
 ~~~
-sudo gdebi camotics_1.2.0_armhf.deb
+cd ~/Downloads
+sudo apt install ./camotics_1.2.0_armhf.deb
 ~~~
 
 ## Intro
@@ -152,16 +153,18 @@ Everything else ought to build cleanly.
 ## Create debian package.
 Before creating the debian package, patch a small typo in SConstruct:
 ~~~
---- SConstruct	2019-10-02 08:25:36.962179211 +0200
-+++ SConstruct.ORIG	2019-10-02 08:25:25.312341100 +0200
+--- SConstruct.ORIG	2019-10-02 08:25:25.312341100 +0200
++++ SConstruct	2019-10-02 13:53:57.431114459 +0200
 @@ -369,7 +369,7 @@
          deb_section = 'miscellaneous',
          deb_depends =
          'debconf | debconf-2.0, libc6, libglu1, libv8-3.14.5 | libv8-dev, ' +
--        'libglu1-mesa, libssl1.1' + qt_pkgs,
-+        'libglu1-mesa libssl1.1' + qt_pkgs,
+-        'libglu1-mesa libssl1.1' + qt_pkgs,
++        'libglu1-mesa, libnode-dev, libssl1.1' + qt_pkgs,
          deb_priority = 'optional',
          deb_replaces = 'openscam',
+ 
+
 ~~~
 and type:
 ~~~
@@ -170,7 +173,7 @@ scons package
 To complete the debian package, we'll add the Qt libraries we've just built:
 ~~~
 cd build/camotics-deb/
-( tar cvhf - /usr/local/qt5.12lts/lib/libQt5Widgets.so.5 /usr/local/qt5.12lts/lib/libQt5Gui.so.5 /usr/local/qt5.12lts/lib/libQt5WebSockets.so.5 /usr/local/qt5.12lts/lib/libQt5Network.so.5 /usr/local/qt5.12lts/lib/libQt5Core.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
+( tar cvhf - /usr/local/qt5.12lts/lib/*.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
 ~~~
 Note the 'h' option in the tar. 
 Copy the build notes (this document) to build/camotics-deb/usr/share/doc/camotics/BUILD_NOTES.md
@@ -195,7 +198,8 @@ This completes building the camotics package for Raspbian.
 ## Install debian package and its dependencies
 To install:
 ~~~
-sudo gdebi camotics_1.2.0_armhf.deb
+cd ~/Downloads
+sudo apt install ./camotics_1.2.0_armhf.deb
 ~~~
 To remove:
 ~~~
