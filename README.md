@@ -1,11 +1,11 @@
 # Camotics Build Notes 
 Build notes for camotics on a raspberry pi 4, 4gb ram, running raspbian "Buster" . To install, download the [Debian binary package](https://github.com/koendv/camotics-raspberrypi/raw/master/camotics_1.2.0_armhf.deb) and install using 
 ~~~
-gdebi camotics_1.2.0_armhf.deb
+sudo gdebi camotics_1.2.0_armhf.deb
 ~~~
 
 ## Intro
-![screenshot](doc/screenshot.png  "Camotics on Raspberry Pi")
+![screenshot](https://github.com/koendv/camotics-raspberrypi/raw/master/doc/screenshot.png  "Camotics on Raspberry Pi")
 CAMotics simulates g-code. CAMotics can be used to see how a 3d printer would print a workpiece. 
 
 ## Prerequisites
@@ -30,9 +30,9 @@ Not needed: qt5-default libqt5websockets5-dev libqt5opengl5-dev
 
 ## Build Qt5 LTS
 
-As on https://www.tal.org/tutorials/building-qt-512-raspberry-pi but with the following differences:
+Build, following the instructions on [Building Qt 5.12 LTS for Raspberry Pi on Raspbian](https://www.tal.org/tutorials/building-qt-512-raspberry-pi) but with the following differences:
 
-- patch qt sources:
+- patch qt sources, else compilation fails:
 ~~~
 diff -rBNu qt-everywhere-src-5.12.5/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp qt-everywhere-src-5.12.5.OLD/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp
 --- qt-everywhere-src-5.12.5/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp	2019-09-03 20:52:35.000000000 +0200
@@ -60,7 +60,7 @@ diff -rBNu qt-everywhere-src-5.12.5/qtscript/src/3rdparty/javascriptcore/JavaScr
  #elif CPU(ARM_TRADITIONAL) && CPU(ARM_THUMB2) /* Sanity Check */
  #  error "Cannot use both of WTF_CPU_ARM_TRADITIONAL and WTF_CPU_ARM_THUMB2 platforms"
 ~~~
-- In "Configure the Qt build": Choose -opengl "desktop"
+- In "Configure the Qt build" choose -opengl "desktop"
 ~~~sh
 PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig \
 ../qt-everywhere-src-5.12.5/configure -platform linux-rpi3-g++ \
@@ -134,8 +134,12 @@ git clone https://github.com/CauldronDevelopmentLLC/CAMotics
 cd CAMotics
 scons
 ~~~
-If scons terminates with `GL.cpp:(.text+0x240): undefined reference to `QOpenGLFunctions_2_0::versionProfile()'`
-In `/usr/local/qt5.12lts/lib/libQt5OpenGL.la` the dependency libraries for libQt5OpenGL are:
+If scons terminates with the error message
+~~~
+GL.cpp:(.text+0x240): undefined reference to `QOpenGLFunctions_2_0::versionProfile()'
+~~~
+take the following action:
+In `/usr/local/qt5.12lts/lib/libQt5OpenGL.la` check the dependency libraries for libQt5OpenGL are:
 ~~~
 dependency_libs='-L=/usr/local/qt5.12lts/lib -lQt5Widgets -lQt5Gui -lQt5Core -lpthread'
 ~~~
@@ -163,14 +167,15 @@ and type:
 ~~~
 scons package
 ~~~
-To complete the package, we'll add the Qt libraries we've just built:
+To complete the debian package, we'll add the Qt libraries we've just built:
 ~~~
 cd build/camotics-deb/
 ( tar cvf - /usr/local/qt5.12lts/lib/libQt5Widgets.so.5 /usr/local/qt5.12lts/lib/libQt5Gui.so.5 /usr/local/qt5.12lts/lib/libQt5WebSockets.so.5 /usr/local/qt5.12lts/lib/libQt5Network.so.5 /usr/local/qt5.12lts/lib/libQt5Core.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
 ~~~
-and re-build the package with the Qt5 libraries added. Go back to the 
+and re-build the .deb package, this time with the Qt5 libraries added. Go back to the top level of the camotics source:
 ~~~
 cd ../..
+ls build/camotics-deb
 fakeroot dpkg-deb -b build/camotics-deb .
 ~~~
 This creates the debian package `camotics_1.2.0_armhf.deb`. Don't forget to put the qt5 includes and libs back:
@@ -184,14 +189,15 @@ ls -l qt5
 rm qt5
 mv qt5.OLD qt5
 ~~~
+This completes building the camotics package for Raspbian.
 ## Install debian package and its dependencies
 To install:
 ~~~
-gdebi camotics_1.2.0_armhf.deb
+sudo gdebi camotics_1.2.0_armhf.deb
 ~~~
 To remove:
 ~~~
-dpkg -r camotics
+sudo dpkg -r camotics
 ~~~
 
 This file installed as `/usr/share/doc/camotics/BUILD_NOTES.md`
