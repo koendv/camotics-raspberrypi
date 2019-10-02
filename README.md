@@ -170,9 +170,11 @@ scons package
 To complete the debian package, we'll add the Qt libraries we've just built:
 ~~~
 cd build/camotics-deb/
-( tar cvf - /usr/local/qt5.12lts/lib/libQt5Widgets.so.5 /usr/local/qt5.12lts/lib/libQt5Gui.so.5 /usr/local/qt5.12lts/lib/libQt5WebSockets.so.5 /usr/local/qt5.12lts/lib/libQt5Network.so.5 /usr/local/qt5.12lts/lib/libQt5Core.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
+( tar cvhf - /usr/local/qt5.12lts/lib/libQt5Widgets.so.5 /usr/local/qt5.12lts/lib/libQt5Gui.so.5 /usr/local/qt5.12lts/lib/libQt5WebSockets.so.5 /usr/local/qt5.12lts/lib/libQt5Network.so.5 /usr/local/qt5.12lts/lib/libQt5Core.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
 ~~~
-and re-build the .deb package, this time with the Qt5 libraries added. Go back to the top level of the camotics source:
+Note the 'h' option in the tar. 
+Copy the build notes (this document) to build/camotics-deb/usr/share/doc/camotics/BUILD_NOTES.md
+Re-build the .deb package, this time with the Qt5 libraries added. Go back to the top level of the camotics source:
 ~~~
 cd ../..
 ls build/camotics-deb
