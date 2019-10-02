@@ -173,7 +173,7 @@ scons package
 To complete the debian package, we'll add the Qt libraries we've just built:
 ~~~
 cd build/camotics-deb/
-( tar cvhf - /usr/local/qt5.12lts/lib/*.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/plugins/ | tar xvf - )
+( tar cvhf - /usr/local/qt5.12lts/lib/*.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/translations/ | tar xvf - )
 ~~~
 Note the 'h' option in the tar. 
 Copy the build notes (this document) to build/camotics-deb/usr/share/doc/camotics/BUILD_NOTES.md
