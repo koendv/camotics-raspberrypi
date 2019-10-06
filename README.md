@@ -18,7 +18,7 @@ For cbang:
 ~~~
 sudo apt-get -y install scons build-essential libssl-dev libv8-dev git libglu1-mesa-dev libyaml-dev libevent-dev libre2-dev libnode-dev libdxflib-dev
 ~~~
-For Qt5 with mesa:
+For mesa:
 ~~~
 sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev
 ~~~
