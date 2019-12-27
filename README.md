@@ -1,8 +1,9 @@
 # Camotics Build Notes 
-Build notes for camotics on a raspberry pi 4, 4gb ram, running raspbian "Buster" . To install, download the [Debian binary package](https://github.com/koendv/camotics-raspberrypi/raw/master/camotics_1.2.0_armhf.deb) and install using 
+Build notes for camotics on a raspberry pi 4, 4gb ram, running raspbian "Buster" . To run, download the [AppImage](https://github.com/koendv/camotics-raspberrypi/releases) and install using 
 ~~~
 cd ~/Downloads
-sudo apt install ./camotics_1.2.0_armhf.deb
+chmod +x CAMotics-armhf.AppImage
+./CAMotics-armhf.AppImage
 ~~~
 
 ## Intro
@@ -10,96 +11,34 @@ sudo apt install ./camotics_1.2.0_armhf.deb
 CAMotics simulates g-code. CAMotics can be used to see how a 3d printer would print a workpiece. 
 
 ## Prerequisites
+
+Build on a clean  2019-09-26-raspbian-buster-lite. This avoids having multiple libQt versions during compilation.
+
 Install the prerequisites
 ~~~
 sudo apt-get update
 ~~~
+
+Install Qt5.12 LTS with OpenGL:
+~~~
+wget https://github.com/koendv/qt5-opengl-raspberrypi/releases/download/v5.12.5-1/qt5-opengl-dev_5.12.5_armhf.deb
+sudo apt install ./qt5-opengl-dev_5.12.5_armhf.deb
+~~~
+
 For cbang:
 ~~~
-sudo apt-get -y install scons build-essential libssl-dev libv8-dev git libglu1-mesa-dev libyaml-dev libevent-dev libre2-dev libnode-dev libdxflib-dev
+apt-get install scons build-essential libssl-dev binutils-dev libiberty-dev libmariadb-dev-compat libleveldb-dev libsnappy-dev git
+apt-get install libbz2-dev libyaml-dev libevent-dev libre2-dev 
 ~~~
-For mesa:
+Install libnode-dev to pull in libv8-dev and libplatform.h:
 ~~~
-sudo apt-get install libgl1-mesa-dev libglu1-mesa-dev mesa-common-dev
+apt-get install libnode-dev 
 ~~~
-For Qt5:
+For camotics:
 ~~~
-apt-get install build-essential libfontconfig1-dev libdbus-1-dev libfreetype6-dev libicu-dev libinput-dev libxkbcommon-dev libsqlite3-dev libssl-dev libpng-dev libjpeg-dev libglib2.0-dev libraspberrypi-dev
+apt-get install python-six libdxflib-dev libglu1-mesa-dev
 ~~~
-Not needed: qt5-default libqt5websockets5-dev libqt5opengl5-dev 
-(We'll build these from source)
 
-## Build Qt5 LTS
-
-Build, following the instructions on [Building Qt 5.12 LTS for Raspberry Pi on Raspbian](https://www.tal.org/tutorials/building-qt-512-raspberry-pi) but with the following differences:
-
-- patch qt sources, else compilation fails:
-~~~
-diff -rBNu qt-everywhere-src-5.12.5/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp qt-everywhere-src-5.12.5.OLD/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp
---- qt-everywhere-src-5.12.5/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp	2019-09-03 20:52:35.000000000 +0200
-+++ qt-everywhere-src-5.12.5.OLD/qtbase/src/plugins/platforms/xcb/gl_integrations/xcb_egl/qxcbeglwindow.cpp	2019-09-30 16:03:17.831619246 +0200
-@@ -93,7 +93,7 @@
- {
-     QXcbWindow::create();
- 
--    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, m_window, 0);
-+    m_surface = eglCreateWindowSurface(m_glIntegration->eglDisplay(), m_config, (void*)m_window, 0);
- }
- 
- QT_END_NAMESPACE
-diff -rBNu qt-everywhere-src-5.12.5/qtscript/src/3rdparty/javascriptcore/JavaScriptCore/wtf/Platform.h qt-everywhere-src-5.12.5.OLD/qtscript/src/3rdparty/javascriptcore/JavaScriptCore/wtf/Platform.h
---- qt-everywhere-src-5.12.5/qtscript/src/3rdparty/javascriptcore/JavaScriptCore/wtf/Platform.h	2019-08-23 12:28:19.000000000 +0200
-+++ qt-everywhere-src-5.12.5.OLD/qtscript/src/3rdparty/javascriptcore/JavaScriptCore/wtf/Platform.h	2019-10-01 15:52:01.966516814 +0200
-@@ -367,7 +368,8 @@
- #    define WTF_CPU_ARM_TRADITIONAL 1
- #    define WTF_CPU_ARM_THUMB2 0
- #  else
--#    error "Not supported ARM architecture"
-+#    define WTF_CPU_ARM_TRADITIONAL 1
-+#    define WTF_CPU_ARM_THUMB2 0
- #  endif
- #elif CPU(ARM_TRADITIONAL) && CPU(ARM_THUMB2) /* Sanity Check */
- #  error "Cannot use both of WTF_CPU_ARM_TRADITIONAL and WTF_CPU_ARM_THUMB2 platforms"
-~~~
-- In "Configure the Qt build" choose -opengl "desktop"
-~~~sh
-PKG_CONFIG_LIBDIR=/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig \
-../qt-everywhere-src-5.12.5/configure -platform linux-rpi3-g++ \
--v \
--opengl desktop -eglfs \
--no-gtk \
--opensource -confirm-license -release \
--reduce-exports \
--force-pkg-config \
--nomake examples -no-compile-examples \
--skip qtwayland \
--skip qtwebengine \
--no-feature-geoservices_mapboxgl \
--qt-pcre \
--no-pch \
--ssl \
--evdev \
--system-freetype \
--fontconfig \
--glib \
--prefix /usr/local/qt5.12lts \
--qpa eglfs
-~~~
-Check output for:
-~~~
-Configure summary:
-Build type: linux-rpi3-g++ (arm, CPU features: neon)
-Qt Gui:
-  OpenGL:
-    Desktop OpenGL ....................... yes
-~~~
-Build and install qt5 lts:
-~~~
-make 
-sudo make install
-cd ..
-~~~
-This installs qt5 in `/usr/local/qt5.12lts`
 ## Build cbang
 ~~~
 git clone https://github.com/CauldronDevelopmentLLC/cbang
@@ -116,96 +55,67 @@ Checking for C library v8... yes
 ~~~
 
 ## Build camotics
-If you already have  a qt5 installation, temporarily move it out of the way:
-~~~
-cd /usr/include/arm-linux-gnueabihf
-mv qt5 qt5.OLD
-ln -s /usr/local/qt5.12lts/include/ qt5
-cd /usr/lib/arm-linux-gnueabihf/
-mv qt5 qt5.OLD
-ln -s /usr/local/qt5.12lts/lib/ qt5
-~~~
-
 Tell camotics where cbang is and compile:
 ~~~
 export CBANG_HOME=$PWD/cbang
-export QT5DIR=/usr/local/qt5.12lts/
+export QT5DIR=/usr/lib/qt5.12/
 export PATH=$QT5DIR/bin:$PATH
+export PKG_CONFIG_PATH=/usr/lib/qt5.12/lib/pkgconfig/
 git clone https://github.com/CauldronDevelopmentLLC/CAMotics
 cd CAMotics
 scons
 ~~~
-If scons terminates with the error message
-~~~
-GL.cpp:(.text+0x240): undefined reference to `QOpenGLFunctions_2_0::versionProfile()'
-~~~
-take the following action:
-In `/usr/local/qt5.12lts/lib/libQt5OpenGL.la` check the dependency libraries for libQt5OpenGL are:
-~~~
-dependency_libs='-L=/usr/local/qt5.12lts/lib -lQt5Widgets -lQt5Gui -lQt5Core -lpthread'
-~~~
-It's easiest to just copy-paste  the dependency libs to the command used to link camotics and camsim:
-~~~
-g++ -o camotics -Wl,--as-needed -Wl,-S -Wl,-x -no-pie -pthread -Wl,-rpath=/usr/local/qt5.12lts//lib build/camotics.o build/qrc_camotics.o -L/home/koen/src/cbang/lib build/libCAMoticsGUI.a build/libclipper.a build/libDXF.a build/libSTL.a build/libGCode.a -lstdc++ -lcairo -lGL -lcbang -lcbang-boost -lv8 -lssl -lcrypto -ldl -lexpat -lbz2 -lz -lpthread -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5WebSockets -lQt5Network -lQt5Core build/dxflib/libdxflib.a -L=/usr/local/qt5.12lts/lib -lQt5Widgets -lQt5Gui -lQt5Core -lpthread
-g++ -o camsim -Wl,--as-needed -Wl,-S -Wl,-x -no-pie -pthread -Wl,-rpath=/usr/local/qt5.12lts//lib build/camsim.o build/qrc_camotics.o -L/home/koen/src/cbang/lib build/libCAMoticsGUI.a build/libclipper.a build/libDXF.a build/libSTL.a build/libGCode.a -lstdc++ -lcairo -lGL -lcbang -lcbang-boost -lv8 -lssl -lcrypto -ldl -lexpat -lbz2 -lz -lpthread -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5WebSockets -lQt5Network -lQt5Core build/dxflib/libdxflib.a -L=/usr/local/qt5.12lts/lib -lQt5Widgets -lQt5Gui -lQt5Core -lpthread
-~~~
-Everything else ought to build cleanly.
-## Create debian package.
-Before creating the debian package, patch a small typo in SConstruct:
-~~~
---- SConstruct.ORIG	2019-10-02 08:25:25.312341100 +0200
-+++ SConstruct	2019-10-02 13:53:57.431114459 +0200
-@@ -369,7 +369,7 @@
-         deb_section = 'miscellaneous',
-         deb_depends =
-         'debconf | debconf-2.0, libc6, libglu1, libv8-3.14.5 | libv8-dev, ' +
--        'libglu1-mesa libssl1.1' + qt_pkgs,
-+        'libglu1-mesa, libnode-dev, libssl1.1' + qt_pkgs,
-         deb_priority = 'optional',
-         deb_replaces = 'openscam',
- 
 
+## Create AppImage
+Type:
 ~~~
-and type:
-~~~
+rm -rf build/camotics-deb/
 scons package
 ~~~
-To complete the debian package, we'll add the Qt libraries we've just built:
+This creates the debian package `camotics_1.2.1_armhf.deb`.
+To create the AppImage, remove the Debian package info:
 ~~~
 cd build/camotics-deb/
-( tar cvhf - /usr/local/qt5.12lts/lib/*.so.5 /usr/local/qt5.12lts/plugins/ /usr/local/qt5.12lts/translations/ | tar xvf - )
+export APPIMAGE_DIR=$PWD
+rm -rf DEBIAN/
 ~~~
-Note the 'h' option in the tar. 
-Copy the build notes (this document) to build/camotics-deb/usr/share/doc/camotics/BUILD_NOTES.md
-Re-build the .deb package, this time with the Qt5 libraries added. Go back to the top level of the camotics source:
+Add desktop icon information:
 ~~~
-cd ../..
-ls build/camotics-deb
-fakeroot dpkg-deb -b build/camotics-deb .
+cp usr/share/applications/CAMotics.desktop .
+cp usr/share/pixmaps/camotics.png $APPIMAGE
+cat <<EOD  >> CAMotics.desktop
+Version=1.0
+X-AppImage-Version=1.2.1
+EOD
 ~~~
-This creates the debian package `camotics_1.2.0_armhf.deb`. Don't forget to put the qt5 includes and libs back:
+Copy Qt translations:
 ~~~
-cd /usr/include/arm-linux-gnueabihf
-ls -l qt5
-rm qt5
-mv qt5.OLD qt5
-cd /usr/lib/arm-linux-gnueabihf/
-ls -l qt5
-rm qt5
-mv qt5.OLD qt5
-~~~
-This completes building the camotics package for Raspbian.
-## Install debian package and its dependencies
-To install:
-~~~
-cd ~/Downloads
-sudo apt install ./camotics_1.2.0_armhf.deb
-~~~
-To remove:
-~~~
-sudo dpkg -r camotics
+(cd /; tar cvhf - usr/lib/qt5.12/translations/) | (cd $APPIMAGE_DIR; tar xvpf -)
 ~~~
 
-This file installed as `/usr/share/doc/camotics/BUILD_NOTES.md`
+Copy library dependencies to AppImage. First make a list of all shared libraries used, then copy these libraries to the AppImage directory.
+~~~
+./appimagelibs-buster build/camotics-deb/
+~~~
+Copy AppImage files. From `https://github.com/AppImage/AppImageKit/releases/` download `AppRun-armhf` and `appimagetool-armhf.AppImage`.
+```
+cp ~/Downloads/AppRun-armhf $APPIMAGE_DIR/AppRun
+chmod a+x $APPIMAGE/AppRun
+```
+Create AppStream metadata:
+```
+mkdir -p $APPIMAGE_DIR/usr/share/metainfo/
+cp ../CAMotics.appdata.xml $APPIMAGE/usr/share/metainfo/
+```
+Create AppImage:
+```
+cd $APPIMAGE_DIR/..
+~/Downloads/appimagetool-armhf.AppImage $APPIMAGE_DIR
+```
+Test AppImage:
+```
+./CAMotics-armhf.AppImage
+```
+Run the AppImage on a clean install of the operating system to check all dependencies have been caught.
 
 not truncated.
