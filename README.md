@@ -6,11 +6,10 @@ chmod +x CAMotics-armhf.AppImage
 ./CAMotics-armhf.AppImage
 ~~~
 
-## Intro
 ![screenshot](https://github.com/koendv/camotics-raspberrypi/raw/master/doc/screenshot.png  "Camotics on Raspberry Pi")
 CAMotics simulates g-code. CAMotics can be used to see how a 3d printer would print a workpiece. 
 
-#Build Notes 
+# Build Notes 
 ## Prerequisites
 
 Build on a clean  2019-09-26-raspbian-buster-lite. This avoids having multiple libQt versions during compilation.
