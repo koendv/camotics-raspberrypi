@@ -1,4 +1,4 @@
-# Camotics Build Notes 
+# Camotics for Raspberry Pi
 Build notes for camotics on a raspberry pi 4, 4gb ram, running raspbian "Buster" . To run, download the [AppImage](https://github.com/koendv/camotics-raspberrypi/releases) and install using 
 ~~~
 cd ~/Downloads
@@ -10,6 +10,7 @@ chmod +x CAMotics-armhf.AppImage
 ![screenshot](https://github.com/koendv/camotics-raspberrypi/raw/master/doc/screenshot.png  "Camotics on Raspberry Pi")
 CAMotics simulates g-code. CAMotics can be used to see how a 3d printer would print a workpiece. 
 
+#Build Notes 
 ## Prerequisites
 
 Build on a clean  2019-09-26-raspbian-buster-lite. This avoids having multiple libQt versions during compilation.
