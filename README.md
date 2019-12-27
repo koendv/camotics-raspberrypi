@@ -96,9 +96,9 @@ Copy Qt translations:
 Copy library dependencies to AppImage. First make a list of all shared libraries used, then copy these libraries to the AppImage directory.
 ```
 cd $APPIMAGE_DIR/..
-wget https://raw.githubusercontent.com/koendv/camotics-raspberrypi/master/appimagelibs-buster
-chmod +x ./appimagelibs-buster 
-./appimagelibs-buster $APPIMAGE_DIR
+wget https://raw.githubusercontent.com/koendv/camotics-raspberrypi/master/appimagelibs-qt-buster
+chmod +x ./appimagelibs-qt-buster 
+./appimagelibs-qt-buster $APPIMAGE_DIR
 ```
 Copy AppImage files. From `https://github.com/AppImage/AppImageKit/releases/` download `AppRun-armhf` and `appimagetool-armhf.AppImage`.
 ```
