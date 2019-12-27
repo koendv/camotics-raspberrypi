@@ -38,7 +38,6 @@ For camotics:
 ~~~
 apt-get install python-six libdxflib-dev libglu1-mesa-dev
 ~~~
-
 ## Build cbang
 ~~~
 git clone https://github.com/CauldronDevelopmentLLC/cbang
@@ -73,7 +72,7 @@ rm -rf build/camotics-deb/
 scons package
 ~~~
 This creates the debian package `camotics_1.2.1_armhf.deb`.
-To create the AppImage, remove the Debian package info:
+To continue creating the AppImage, first remove the Debian package info:
 ~~~
 cd build/camotics-deb/
 export APPIMAGE_DIR=$PWD
@@ -82,36 +81,41 @@ rm -rf DEBIAN/
 Add desktop icon information:
 ~~~
 cp usr/share/applications/CAMotics.desktop .
-cp usr/share/pixmaps/camotics.png $APPIMAGE
+cp usr/share/pixmaps/camotics.png $APPIMAGE_DIR
 cat <<EOD  >> CAMotics.desktop
 Version=1.0
 X-AppImage-Version=1.2.1
 EOD
 ~~~
+
 Copy Qt translations:
 ~~~
 (cd /; tar cvhf - usr/lib/qt5.12/translations/) | (cd $APPIMAGE_DIR; tar xvpf -)
 ~~~
 
 Copy library dependencies to AppImage. First make a list of all shared libraries used, then copy these libraries to the AppImage directory.
-~~~
-./appimagelibs-buster build/camotics-deb/
-~~~
+```
+cd $APPIMAGE_DIR/..
+wget https://raw.githubusercontent.com/koendv/camotics-raspberrypi/master/appimagelibs-buster
+chmod +x ./appimagelibs-buster 
+./appimagelibs-buster $APPIMAGE_DIR
+```
 Copy AppImage files. From `https://github.com/AppImage/AppImageKit/releases/` download `AppRun-armhf` and `appimagetool-armhf.AppImage`.
 ```
 cp ~/Downloads/AppRun-armhf $APPIMAGE_DIR/AppRun
-chmod a+x $APPIMAGE/AppRun
+chmod a+x $APPIMAGE_DIR/AppRun
 ```
-Create AppStream metadata:
+Copy AppStream metadata.
 ```
 mkdir -p $APPIMAGE_DIR/usr/share/metainfo/
-cp ../CAMotics.appdata.xml $APPIMAGE/usr/share/metainfo/
+cp ../CAMotics.appdata.xml $APPIMAGE_DIR/usr/share/metainfo/CAMotics.appdata.xml
 ```
 Create AppImage:
 ```
 cd $APPIMAGE_DIR/..
 ~/Downloads/appimagetool-armhf.AppImage $APPIMAGE_DIR
 ```
+This produces the file ```CAMotics-armhf.AppImage```.
 Test AppImage:
 ```
 ./CAMotics-armhf.AppImage
